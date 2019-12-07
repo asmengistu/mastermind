@@ -58,28 +58,60 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Color> secret = generateRandom();
   bool finished = false;
 
+  void resetState() {
+    setState(() {
+      previousGuesses = [];
+      finished = false;
+      secret = generateRandom();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('MasterMind 🧐'),
         centerTitle: true,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () async {
+              final confirm = await showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                          title: Text("Reset game?"),
+                          actions: <Widget>[
+                            IconButton(
+                              icon: Icon(Icons.cancel),
+                              onPressed: () => Navigator.pop(context, false),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.check),
+                              onPressed: () => Navigator.pop(context, true),
+                            )
+                          ],
+                        ));
+              if (confirm) {
+                resetState();
+              }
+            },
+          )
+        ],
       ),
       body: ListView.builder(
         itemCount: previousGuesses.length + 1,
         itemBuilder: (context, index) {
           Widget r;
           if (index == previousGuesses.length) {
-            final guess = index == 0 ? Guess(isCurrent: true) : Guess(isCurrent: true, guess: previousGuesses[index-1]);
+            final guess = index == 0
+                ? Guess(isCurrent: true)
+                : Guess(isCurrent: true, guess: previousGuesses[index - 1]);
             r = !finished
                 ? guess
                 : GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      previousGuesses = [];
-                      finished = false;
-                    }); 
-                  },
+                    onTap: () {
+                      resetState();
+                    },
                     child: Center(
                         child: Text(
                             'Solved with ${previousGuesses.length} guesses! '
